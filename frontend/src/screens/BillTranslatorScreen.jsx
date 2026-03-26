@@ -1,8 +1,6 @@
 import { useState } from 'react'
-import axios from 'axios'
+import { parseBill } from '../lib/billParser'
 import Navbar from '../components/Navbar'
-
-const API = 'http://localhost:8000/api'
 
 const SAMPLE_BILL = `PATIENT BILL
 Date of Service: 03/15/2024
@@ -20,16 +18,8 @@ TOTAL DUE: $564.00`
 export default function BillTranslatorScreen({ navigate }) {
   const [text, setText] = useState('')
   const [result, setResult] = useState(null)
-  const [loading, setLoading] = useState(false)
 
-  const translate = async () => {
-    setLoading(true)
-    try {
-      const { data } = await axios.post(`${API}/bills/translate`, { text })
-      setResult(data)
-    } catch (e) { alert('Error: ' + e.message) }
-    setLoading(false)
-  }
+  const translate = () => setResult(parseBill(text))
 
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col">
@@ -51,9 +41,9 @@ export default function BillTranslatorScreen({ navigate }) {
           <textarea value={text} onChange={e => setText(e.target.value)}
             className="w-full bg-gray-50 rounded-xl p-4 text-sm font-mono h-44 resize-none outline-none text-gray-600 placeholder-gray-300 border border-gray-100 focus:border-blue-300 transition-colors"
             placeholder="Paste your medical bill here..." />
-          <button onClick={translate} disabled={loading || !text}
+          <button onClick={translate} disabled={!text}
             className="mt-4 bg-blue-500 hover:bg-blue-600 text-white font-semibold px-8 py-3 rounded-xl disabled:opacity-40 transition-all active:scale-95 text-sm shadow-sm shadow-blue-200">
-            {loading ? 'Analyzing...' : 'Translate Bill'}
+            Translate Bill
           </button>
         </div>
 
@@ -76,7 +66,7 @@ export default function BillTranslatorScreen({ navigate }) {
                         </div>
                         <p className="text-sm text-gray-700">{item.description}</p>
                       </div>
-                      <span className="text-green-600 font-bold text-sm flex-shrink-0">${item.estimated_cost.toLocaleString()}</span>
+                      <span className="text-green-600 font-bold text-sm flex-shrink-0">${item.avg_cost.toLocaleString()}</span>
                     </div>
                   ))}
                 </div>
@@ -93,7 +83,7 @@ export default function BillTranslatorScreen({ navigate }) {
                       <div>
                         <p className="text-xs text-gray-400 font-mono">{d.code}</p>
                         <p className="text-sm font-semibold text-gray-800">{d.plain_english}</p>
-                        <p className="text-xs text-gray-400">{d.clinical_term}</p>
+                        <p className="text-xs text-gray-400">{d.description}</p>
                       </div>
                     </div>
                   ))}
@@ -106,12 +96,12 @@ export default function BillTranslatorScreen({ navigate }) {
                 {result.red_flags.map((flag, i) => (
                   <div key={i} className={`rounded-xl p-4 ${
                     flag.type === 'OVERCHARGE' ? 'bg-red-50 border border-red-200' :
-                    flag.type === 'DUPLICATE' ? 'bg-amber-50 border border-amber-200' :
+                    flag.type === 'DUPLICATE'  ? 'bg-amber-50 border border-amber-200' :
                     'bg-blue-50 border border-blue-200'
                   }`}>
                     <p className={`font-bold text-xs mb-1 ${
                       flag.type === 'OVERCHARGE' ? 'text-red-600' :
-                      flag.type === 'DUPLICATE' ? 'text-amber-600' : 'text-blue-600'
+                      flag.type === 'DUPLICATE'  ? 'text-amber-600' : 'text-blue-600'
                     }`}>{flag.type}</p>
                     <p className="text-sm text-gray-700 leading-relaxed">{flag.message}</p>
                   </div>

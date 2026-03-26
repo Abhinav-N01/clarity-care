@@ -1,8 +1,6 @@
 import { useState } from 'react'
-import axios from 'axios'
+import { estimateCost } from '../lib/costEstimator'
 import Navbar from '../components/Navbar'
-
-const API = 'http://localhost:8000/api'
 
 const PROCEDURES = [
   { code: '99213', name: 'Office Visit (Low Complexity)' },
@@ -18,17 +16,8 @@ const PROCEDURES = [
 export default function CostEstimatorScreen({ navigate }) {
   const [form, setForm] = useState({ cpt_code: '99213', insurance_type: 'PPO', facility_type: 'Clinic', age: 35, zip_code: '10001' })
   const [result, setResult] = useState(null)
-  const [loading, setLoading] = useState(false)
 
-  const predict = async () => {
-    setLoading(true)
-    try {
-      const { data } = await axios.post(`${API}/predict/cost`, form)
-      setResult(data)
-    } catch (e) { alert('Error: ' + e.message) }
-    setLoading(false)
-  }
-
+  const predict = () => setResult(estimateCost(form))
   const set = (k, v) => setForm(f => ({ ...f, [k]: v }))
 
   return (
@@ -41,7 +30,6 @@ export default function CostEstimatorScreen({ navigate }) {
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          {/* Form */}
           <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100">
             <h2 className="font-bold text-gray-800 mb-5">Your Details</h2>
             <div className="space-y-4">
@@ -52,24 +40,22 @@ export default function CostEstimatorScreen({ navigate }) {
                   {PROCEDURES.map(p => <option key={p.code} value={p.code}>{p.name}</option>)}
                 </select>
               </div>
-
               <div className="grid grid-cols-2 gap-3">
                 <div>
                   <label className="text-xs font-semibold text-gray-500 uppercase tracking-wide">Insurance</label>
                   <select value={form.insurance_type} onChange={e => set('insurance_type', e.target.value)}
                     className="mt-1.5 w-full bg-gray-50 border border-gray-100 rounded-xl px-3 py-3 text-sm outline-none text-gray-700 focus:border-blue-300 transition-colors">
-                    {['PPO', 'HMO', 'HDHP', 'Medicare', 'Medicaid'].map(t => <option key={t}>{t}</option>)}
+                    {['PPO','HMO','HDHP','Medicare','Medicaid'].map(t => <option key={t}>{t}</option>)}
                   </select>
                 </div>
                 <div>
                   <label className="text-xs font-semibold text-gray-500 uppercase tracking-wide">Facility</label>
                   <select value={form.facility_type} onChange={e => set('facility_type', e.target.value)}
                     className="mt-1.5 w-full bg-gray-50 border border-gray-100 rounded-xl px-3 py-3 text-sm outline-none text-gray-700 focus:border-blue-300 transition-colors">
-                    {['Hospital', 'Outpatient', 'Clinic'].map(t => <option key={t}>{t}</option>)}
+                    {['Hospital','Outpatient','Clinic'].map(t => <option key={t}>{t}</option>)}
                   </select>
                 </div>
               </div>
-
               <div className="grid grid-cols-2 gap-3">
                 <div>
                   <label className="text-xs font-semibold text-gray-500 uppercase tracking-wide">Age</label>
@@ -83,15 +69,13 @@ export default function CostEstimatorScreen({ navigate }) {
                     placeholder="10001" />
                 </div>
               </div>
-
-              <button onClick={predict} disabled={loading}
-                className="w-full bg-blue-500 hover:bg-blue-600 text-white font-semibold py-3.5 rounded-xl disabled:opacity-40 transition-all active:scale-95 text-sm shadow-sm shadow-blue-200 mt-2">
-                {loading ? 'Calculating...' : 'Estimate My Cost'}
+              <button onClick={predict}
+                className="w-full bg-blue-500 hover:bg-blue-600 text-white font-semibold py-3.5 rounded-xl transition-all active:scale-95 text-sm shadow-sm shadow-blue-200 mt-2">
+                Estimate My Cost
               </button>
             </div>
           </div>
 
-          {/* Result */}
           <div className="space-y-4">
             {result ? (
               <>
@@ -101,7 +85,6 @@ export default function CostEstimatorScreen({ navigate }) {
                   <p className="text-sm opacity-70">Range: ${result.low_estimate?.toLocaleString()} – ${result.high_estimate?.toLocaleString()}</p>
                   <p className="text-xs opacity-50 mt-1">{result.confidence}</p>
                 </div>
-
                 <div className="bg-white rounded-2xl p-5 shadow-sm border border-gray-100">
                   <p className="text-xs text-gray-400 uppercase tracking-wide font-semibold mb-1">Procedure</p>
                   <p className="font-semibold text-gray-800">{result.procedure}</p>
@@ -110,15 +93,12 @@ export default function CostEstimatorScreen({ navigate }) {
                     <p className="font-bold text-gray-700">${result.national_avg_total?.toLocaleString()}</p>
                   </div>
                 </div>
-
                 {result.tips?.length > 0 && (
                   <div className="bg-amber-50 border border-amber-100 rounded-xl p-5">
                     <p className="text-xs font-bold text-amber-700 uppercase tracking-wide mb-3">Money-Saving Tips</p>
                     <ul className="space-y-2">
                       {result.tips.map((t, i) => (
-                        <li key={i} className="text-sm text-amber-800 flex gap-2">
-                          <span className="text-amber-500 flex-shrink-0">💡</span>{t}
-                        </li>
+                        <li key={i} className="text-sm text-amber-800 flex gap-2"><span className="text-amber-500 flex-shrink-0">💡</span>{t}</li>
                       ))}
                     </ul>
                   </div>
