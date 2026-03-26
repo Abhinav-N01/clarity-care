@@ -53,7 +53,7 @@ export default function LandingPage({ navigate }) {
 
             {/* Logo — big and centered in its own block */}
             <div className="mb-8">
-              <img src="/logo.png" alt="Clarity Care" className="h-44 w-auto object-contain" />
+              <img src={`${import.meta.env.BASE_URL}logo.png`} alt="Clarity Care" className="h-44 w-auto object-contain" />
             </div>
 
             <h1 className="text-5xl lg:text-6xl font-extrabold text-gray-900 leading-tight mb-6">
@@ -75,7 +75,7 @@ export default function LandingPage({ navigate }) {
               onClick={() => navigate('chat')}
               className="group flex items-center gap-4 bg-white border border-gray-200 hover:border-blue-400 rounded-2xl px-6 py-4 shadow-sm hover:shadow-md transition-all active:scale-95 w-fit"
             >
-              <img src="/logo.png" alt="" className="h-10 w-auto object-contain flex-shrink-0" />
+              <img src={`${import.meta.env.BASE_URL}logo.png`} alt="" className="h-10 w-auto object-contain flex-shrink-0" />
               <div className="text-left">
                 <p className="font-bold text-gray-900 text-base group-hover:text-blue-600 transition-colors">Clarity AI</p>
                 <p className="text-xs text-gray-400 mt-0.5">Ask me anything about your healthcare costs →</p>
@@ -87,7 +87,7 @@ export default function LandingPage({ navigate }) {
           {/* Right — Doctor image */}
           <div className="relative flex-shrink-0 w-full lg:w-[480px] flex justify-center items-end mt-12 lg:mt-0 z-10">
             <img
-              src="/doctor.png"
+              src={`${import.meta.env.BASE_URL}doctor.png`}
               alt="Doctor"
               className="relative z-10 w-[340px] lg:w-[420px] object-contain drop-shadow-2xl"
             />
@@ -122,7 +122,7 @@ export default function LandingPage({ navigate }) {
       {/* Footer */}
       <footer className="bg-white border-t border-gray-100 px-8 py-6">
         <div className="max-w-7xl mx-auto flex items-center justify-between">
-          <img src="/logo.png" alt="Clarity Care" className="h-10 w-auto object-contain" />
+          <img src={`${import.meta.env.BASE_URL}logo.png`} alt="Clarity Care" className="h-10 w-auto object-contain" />
           <p className="text-xs text-gray-400">© 2024 Clarity Care. For informational purposes only.</p>
         </div>
       </footer>

@@ -38,7 +38,7 @@ export default function ChatScreen({ navigate, user }) {
         {/* Sidebar */}
         <div className="hidden lg:flex flex-col w-72 flex-shrink-0 gap-4">
           <div className="bg-white rounded-2xl p-5 shadow-sm border border-gray-100">
-            <img src="/doctor.png" alt="Doctor" className="w-full rounded-xl object-cover mb-4 max-h-52 object-top" />
+            <img src={`${import.meta.env.BASE_URL}doctor.png`} alt="Doctor" className="w-full rounded-xl object-cover mb-4 max-h-52 object-top" />
             <h3 className="font-bold text-gray-800">Clarity Care AI</h3>
             <p className="text-xs text-gray-500 mt-1 leading-relaxed">
               Ask anything — "What is covered if I break a tooth?" or "How much does an MRI cost?"
@@ -57,7 +57,7 @@ export default function ChatScreen({ navigate, user }) {
         {/* Chat */}
         <div className="flex-1 flex flex-col bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
           <div className="px-6 py-4 border-b border-gray-100 flex items-center gap-3">
-            <img src="/logo.png" alt="Clarity Care" className="w-9 h-9 rounded-xl object-contain" />
+            <img src={`${import.meta.env.BASE_URL}logo.png`} alt="Clarity Care" className="w-9 h-9 rounded-xl object-contain" />
             <div>
               <p className="font-bold text-gray-800 text-sm">Clarity Care AI</p>
               <p className="text-xs text-gray-400">Medical billing & insurance assistant</p>
@@ -79,7 +79,7 @@ export default function ChatScreen({ navigate, user }) {
             {messages.map((m, i) => (
               <div key={i} className={`flex gap-3 ${m.role === 'user' ? 'justify-end' : 'justify-start'}`}>
                 {m.role === 'assistant' && (
-                  <img src="/logo.png" alt="" className="w-7 h-7 rounded-lg object-contain flex-shrink-0 mt-0.5" />
+                  <img src={`${import.meta.env.BASE_URL}logo.png`} alt="" className="w-7 h-7 rounded-lg object-contain flex-shrink-0 mt-0.5" />
                 )}
                 <div className={`max-w-[75%] px-4 py-3 rounded-2xl text-sm leading-relaxed whitespace-pre-line ${
                   m.role === 'user'

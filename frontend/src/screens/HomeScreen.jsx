@@ -58,7 +58,7 @@ export default function HomeScreen({ navigate, user }) {
       <div className="px-6 pt-14 pb-6">
         <div className="flex items-center justify-between mb-1">
           <div className="flex items-center gap-3">
-            <img src="/logo.png" alt="Clarity Care" className="w-10 h-10 rounded-full object-cover shadow-md" />
+            <img src={`${import.meta.env.BASE_URL}logo.png`} alt="Clarity Care" className="w-10 h-10 rounded-full object-cover shadow-md" />
             <div>
               <p className="text-xs text-gray-500">Good morning</p>
               <h1 className="text-xl font-bold text-gray-800">Hello {firstName}!</h1>
