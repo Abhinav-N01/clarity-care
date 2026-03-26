@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import axios from 'axios'
-import BottomNav from '../components/BottomNav'
+import Navbar from '../components/Navbar'
 
 const API = 'http://localhost:8000/api'
 
@@ -25,113 +25,115 @@ export default function CostEstimatorScreen({ navigate }) {
     try {
       const { data } = await axios.post(`${API}/predict/cost`, form)
       setResult(data)
-    } catch (e) { alert(e.message) }
+    } catch (e) { alert('Error: ' + e.message) }
     setLoading(false)
   }
 
   const set = (k, v) => setForm(f => ({ ...f, [k]: v }))
 
   return (
-    <div className="screen bg-[#c4d5c0] flex flex-col">
-      {/* Header */}
-      <div className="px-6 pt-14 pb-5 flex items-center gap-3">
-        <button onClick={() => navigate('home')} className="w-9 h-9 bg-white/60 rounded-full flex items-center justify-center">
-          <svg className="w-4 h-4 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
-          </svg>
-        </button>
-        <div>
-          <h1 className="text-lg font-bold text-gray-800">Treatment Cost Estimator</h1>
-          <p className="text-xs text-gray-500">Know your costs before you go</p>
-        </div>
-      </div>
-
-      <div className="flex-1 overflow-y-auto px-6 pb-4 space-y-4">
-        <div className="bg-white/80 rounded-3xl p-5 shadow-sm space-y-4">
-
-          <div>
-            <label className="text-xs font-semibold text-gray-500 uppercase tracking-wide">Procedure</label>
-            <select value={form.cpt_code} onChange={e => set('cpt_code', e.target.value)}
-              className="mt-2 w-full bg-[#f7faf7] rounded-2xl px-4 py-3 text-sm outline-none text-gray-700 appearance-none">
-              {PROCEDURES.map(p => <option key={p.code} value={p.code}>{p.name}</option>)}
-            </select>
-          </div>
-
-          <div className="grid grid-cols-2 gap-3">
-            <div>
-              <label className="text-xs font-semibold text-gray-500 uppercase tracking-wide">Insurance</label>
-              <select value={form.insurance_type} onChange={e => set('insurance_type', e.target.value)}
-                className="mt-2 w-full bg-[#f7faf7] rounded-2xl px-3 py-3 text-sm outline-none text-gray-700 appearance-none">
-                {['PPO', 'HMO', 'HDHP', 'Medicare', 'Medicaid'].map(t => <option key={t}>{t}</option>)}
-              </select>
-            </div>
-            <div>
-              <label className="text-xs font-semibold text-gray-500 uppercase tracking-wide">Facility</label>
-              <select value={form.facility_type} onChange={e => set('facility_type', e.target.value)}
-                className="mt-2 w-full bg-[#f7faf7] rounded-2xl px-3 py-3 text-sm outline-none text-gray-700 appearance-none">
-                {['Hospital', 'Outpatient', 'Clinic'].map(t => <option key={t}>{t}</option>)}
-              </select>
-            </div>
-          </div>
-
-          <div className="grid grid-cols-2 gap-3">
-            <div>
-              <label className="text-xs font-semibold text-gray-500 uppercase tracking-wide">Age</label>
-              <input type="number" value={form.age} onChange={e => set('age', parseInt(e.target.value))} min={18} max={99}
-                className="mt-2 w-full bg-[#f7faf7] rounded-2xl px-4 py-3 text-sm outline-none text-gray-700" />
-            </div>
-            <div>
-              <label className="text-xs font-semibold text-gray-500 uppercase tracking-wide">ZIP Code</label>
-              <input value={form.zip_code} onChange={e => set('zip_code', e.target.value)}
-                className="mt-2 w-full bg-[#f7faf7] rounded-2xl px-4 py-3 text-sm outline-none text-gray-700"
-                placeholder="10001" />
-            </div>
-          </div>
-
-          <button onClick={predict} disabled={loading}
-            className="w-full bg-[#2c6b55] text-white rounded-2xl py-4 font-semibold text-sm disabled:opacity-40 active:opacity-90">
-            {loading ? 'Estimating...' : 'Estimate My Cost'}
-          </button>
+    <div className="min-h-screen bg-gray-50 flex flex-col">
+      <Navbar navigate={navigate} />
+      <div className="flex-1 max-w-4xl mx-auto w-full px-6 py-10">
+        <div className="mb-8">
+          <h1 className="text-3xl font-bold text-gray-900">Treatment Cost Estimator</h1>
+          <p className="text-gray-500 mt-1">Know your out-of-pocket costs before you go. No surprises.</p>
         </div>
 
-        {result && (
-          <>
-            {/* Main cost card */}
-            <div className="bg-[#2c6b55] rounded-3xl p-6 text-center text-white shadow-lg">
-              <p className="text-sm opacity-70 mb-1">Estimated Out-of-Pocket</p>
-              <p className="text-5xl font-bold my-3">${result.predicted_patient_cost?.toLocaleString()}</p>
-              <p className="text-sm opacity-70">Range: ${result.low_estimate?.toLocaleString()} – ${result.high_estimate?.toLocaleString()}</p>
-              <p className="text-xs opacity-50 mt-1">{result.confidence}</p>
-            </div>
-
-            {/* Procedure info */}
-            <div className="bg-white/80 rounded-3xl p-5 shadow-sm">
-              <p className="text-xs text-gray-400 uppercase tracking-wide font-semibold mb-1">Procedure</p>
-              <p className="text-sm font-semibold text-gray-800">{result.procedure}</p>
-              <div className="mt-3 flex items-center justify-between">
-                <p className="text-xs text-gray-500">National avg total cost</p>
-                <p className="text-sm font-bold text-gray-700">${result.national_avg_total?.toLocaleString()}</p>
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          {/* Form */}
+          <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100">
+            <h2 className="font-bold text-gray-800 mb-5">Your Details</h2>
+            <div className="space-y-4">
+              <div>
+                <label className="text-xs font-semibold text-gray-500 uppercase tracking-wide">Procedure</label>
+                <select value={form.cpt_code} onChange={e => set('cpt_code', e.target.value)}
+                  className="mt-1.5 w-full bg-gray-50 border border-gray-100 rounded-xl px-4 py-3 text-sm outline-none text-gray-700 focus:border-blue-300 transition-colors">
+                  {PROCEDURES.map(p => <option key={p.code} value={p.code}>{p.name}</option>)}
+                </select>
               </div>
-            </div>
 
-            {/* Tips */}
-            {result.tips?.length > 0 && (
-              <div className="bg-amber-50 border border-amber-100 rounded-2xl p-4">
-                <p className="text-xs font-semibold text-amber-700 uppercase tracking-wide mb-2">Cost-Saving Tips</p>
-                <ul className="space-y-2">
-                  {result.tips.map((t, i) => (
-                    <li key={i} className="text-xs text-amber-800 flex gap-2">
-                      <span className="mt-0.5 text-amber-500">•</span><span>{t}</span>
-                    </li>
-                  ))}
-                </ul>
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="text-xs font-semibold text-gray-500 uppercase tracking-wide">Insurance</label>
+                  <select value={form.insurance_type} onChange={e => set('insurance_type', e.target.value)}
+                    className="mt-1.5 w-full bg-gray-50 border border-gray-100 rounded-xl px-3 py-3 text-sm outline-none text-gray-700 focus:border-blue-300 transition-colors">
+                    {['PPO', 'HMO', 'HDHP', 'Medicare', 'Medicaid'].map(t => <option key={t}>{t}</option>)}
+                  </select>
+                </div>
+                <div>
+                  <label className="text-xs font-semibold text-gray-500 uppercase tracking-wide">Facility</label>
+                  <select value={form.facility_type} onChange={e => set('facility_type', e.target.value)}
+                    className="mt-1.5 w-full bg-gray-50 border border-gray-100 rounded-xl px-3 py-3 text-sm outline-none text-gray-700 focus:border-blue-300 transition-colors">
+                    {['Hospital', 'Outpatient', 'Clinic'].map(t => <option key={t}>{t}</option>)}
+                  </select>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="text-xs font-semibold text-gray-500 uppercase tracking-wide">Age</label>
+                  <input type="number" value={form.age} onChange={e => set('age', parseInt(e.target.value))} min={18} max={99}
+                    className="mt-1.5 w-full bg-gray-50 border border-gray-100 rounded-xl px-4 py-3 text-sm outline-none focus:border-blue-300 transition-colors" />
+                </div>
+                <div>
+                  <label className="text-xs font-semibold text-gray-500 uppercase tracking-wide">ZIP Code</label>
+                  <input value={form.zip_code} onChange={e => set('zip_code', e.target.value)}
+                    className="mt-1.5 w-full bg-gray-50 border border-gray-100 rounded-xl px-4 py-3 text-sm outline-none focus:border-blue-300 transition-colors"
+                    placeholder="10001" />
+                </div>
+              </div>
+
+              <button onClick={predict} disabled={loading}
+                className="w-full bg-blue-500 hover:bg-blue-600 text-white font-semibold py-3.5 rounded-xl disabled:opacity-40 transition-all active:scale-95 text-sm shadow-sm shadow-blue-200 mt-2">
+                {loading ? 'Calculating...' : 'Estimate My Cost'}
+              </button>
+            </div>
+          </div>
+
+          {/* Result */}
+          <div className="space-y-4">
+            {result ? (
+              <>
+                <div className="bg-blue-500 rounded-2xl p-8 text-center text-white shadow-lg shadow-blue-200">
+                  <p className="text-sm opacity-80 mb-1">Estimated Out-of-Pocket</p>
+                  <p className="text-6xl font-extrabold my-3">${result.predicted_patient_cost?.toLocaleString()}</p>
+                  <p className="text-sm opacity-70">Range: ${result.low_estimate?.toLocaleString()} – ${result.high_estimate?.toLocaleString()}</p>
+                  <p className="text-xs opacity-50 mt-1">{result.confidence}</p>
+                </div>
+
+                <div className="bg-white rounded-2xl p-5 shadow-sm border border-gray-100">
+                  <p className="text-xs text-gray-400 uppercase tracking-wide font-semibold mb-1">Procedure</p>
+                  <p className="font-semibold text-gray-800">{result.procedure}</p>
+                  <div className="flex justify-between mt-3 pt-3 border-t border-gray-100">
+                    <p className="text-sm text-gray-500">National avg total cost</p>
+                    <p className="font-bold text-gray-700">${result.national_avg_total?.toLocaleString()}</p>
+                  </div>
+                </div>
+
+                {result.tips?.length > 0 && (
+                  <div className="bg-amber-50 border border-amber-100 rounded-xl p-5">
+                    <p className="text-xs font-bold text-amber-700 uppercase tracking-wide mb-3">Money-Saving Tips</p>
+                    <ul className="space-y-2">
+                      {result.tips.map((t, i) => (
+                        <li key={i} className="text-sm text-amber-800 flex gap-2">
+                          <span className="text-amber-500 flex-shrink-0">💡</span>{t}
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
+              </>
+            ) : (
+              <div className="bg-white rounded-2xl p-8 shadow-sm border border-gray-100 flex flex-col items-center justify-center h-full text-center">
+                <div className="text-5xl mb-4">💰</div>
+                <p className="font-semibold text-gray-700 mb-1">Your cost estimate will appear here</p>
+                <p className="text-sm text-gray-400">Fill in the form and click "Estimate My Cost"</p>
               </div>
             )}
-          </>
-        )}
+          </div>
+        </div>
       </div>
-
-      <BottomNav active="cost" navigate={navigate} />
     </div>
   )
 }

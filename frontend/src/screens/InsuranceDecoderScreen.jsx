@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import axios from 'axios'
-import BottomNav from '../components/BottomNav'
+import Navbar from '../components/Navbar'
 
 const API = 'http://localhost:8000/api'
 
@@ -34,120 +34,114 @@ export default function InsuranceDecoderScreen({ navigate }) {
   }
 
   return (
-    <div className="screen bg-[#c4d5c0] flex flex-col">
-      {/* Header */}
-      <div className="px-6 pt-14 pb-5 flex items-center gap-3">
-        <button onClick={() => navigate('home')} className="w-9 h-9 bg-white/60 rounded-full flex items-center justify-center">
-          <svg className="w-4 h-4 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
-          </svg>
-        </button>
-        <div>
-          <h1 className="text-lg font-bold text-gray-800">Insurance Decoder</h1>
-          <p className="text-xs text-gray-500">Decode EOBs and denial letters</p>
+    <div className="min-h-screen bg-gray-50 flex flex-col">
+      <Navbar navigate={navigate} />
+      <div className="flex-1 max-w-3xl mx-auto w-full px-6 py-10">
+        <div className="mb-8">
+          <h1 className="text-3xl font-bold text-gray-900">Insurance Decoder</h1>
+          <p className="text-gray-500 mt-1">Decode your Explanation of Benefits or understand a claim denial.</p>
         </div>
-      </div>
 
-      <div className="flex-1 overflow-y-auto px-6 pb-4 space-y-4">
         {/* Toggle */}
-        <div className="bg-white/50 rounded-2xl p-1 flex gap-1">
+        <div className="bg-white border border-gray-200 rounded-2xl p-1.5 flex gap-1 mb-6 shadow-sm w-fit">
           {[{id:'eob',label:'Decode EOB'},{id:'denial',label:'Explain Denial'}].map(m => (
             <button key={m.id} onClick={() => { setMode(m.id); setResult(null) }}
-              className={`flex-1 py-2.5 rounded-xl text-sm font-medium transition-all ${
-                mode === m.id ? 'bg-[#2c6b55] text-white shadow-sm' : 'text-gray-500'
+              className={`px-6 py-2.5 rounded-xl text-sm font-semibold transition-all ${
+                mode === m.id ? 'bg-blue-500 text-white shadow-sm' : 'text-gray-500 hover:text-gray-700'
               }`}>
               {m.label}
             </button>
           ))}
         </div>
 
-        {mode === 'eob' ? (
-          <div className="bg-white/80 rounded-3xl p-5 shadow-sm">
-            <p className="text-sm font-semibold text-gray-700 mb-3">Paste your EOB</p>
-            <textarea value={eobText} onChange={e => setEobText(e.target.value)}
-              className="w-full bg-[#f7faf7] rounded-2xl p-3 text-xs h-36 resize-none outline-none text-gray-600 placeholder-gray-300"
-              placeholder="Paste your Explanation of Benefits here..." />
-            <button onClick={decodeEOB} disabled={loading || !eobText}
-              className="mt-3 w-full bg-[#2c6b55] text-white rounded-2xl py-3.5 font-semibold text-sm disabled:opacity-40">
-              {loading ? 'Decoding...' : 'Decode EOB'}
-            </button>
-          </div>
-        ) : (
-          <div className="bg-white/80 rounded-3xl p-5 shadow-sm">
-            <p className="text-sm font-semibold text-gray-700 mb-3">Enter denial details</p>
-            <input value={denialCode} onChange={e => setDenialCode(e.target.value)}
-              className="w-full bg-[#f7faf7] rounded-2xl px-4 py-3 text-sm outline-none text-gray-700 placeholder-gray-300 mb-3"
-              placeholder="Denial code (e.g. CO-4, PR-1)" />
-            <input value={amount} onChange={e => setAmount(e.target.value)}
-              className="w-full bg-[#f7faf7] rounded-2xl px-4 py-3 text-sm outline-none text-gray-700 placeholder-gray-300 mb-4"
-              placeholder="Amount denied ($)" type="number" />
-            <p className="text-xs text-gray-400 mb-2">Common codes</p>
-            <div className="flex gap-2 flex-wrap mb-4">
-              {['CO-4', 'CO-97', 'PR-1', 'PR-204'].map(c => (
-                <button key={c} onClick={() => setDenialCode(c)}
-                  className="bg-[#e8f2e8] text-[#2c6b55] text-xs px-3 py-1.5 rounded-xl font-medium">{c}</button>
-              ))}
-            </div>
-            <button onClick={explainDenial} disabled={loading || !denialCode}
-              className="w-full bg-[#2c6b55] text-white rounded-2xl py-3.5 font-semibold text-sm disabled:opacity-40">
-              {loading ? 'Looking up...' : 'Explain Denial'}
-            </button>
-          </div>
-        )}
+        <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100 mb-6">
+          {mode === 'eob' ? (
+            <>
+              <label className="text-sm font-semibold text-gray-700 block mb-3">Paste your Explanation of Benefits</label>
+              <textarea value={eobText} onChange={e => setEobText(e.target.value)}
+                className="w-full bg-gray-50 rounded-xl p-4 text-sm h-40 resize-none outline-none text-gray-600 placeholder-gray-300 border border-gray-100 focus:border-blue-300 transition-colors"
+                placeholder="Paste your EOB text here..." />
+              <button onClick={decodeEOB} disabled={loading || !eobText}
+                className="mt-4 bg-blue-500 hover:bg-blue-600 text-white font-semibold px-8 py-3 rounded-xl disabled:opacity-40 transition-all active:scale-95 text-sm shadow-sm shadow-blue-200">
+                {loading ? 'Decoding...' : 'Decode EOB'}
+              </button>
+            </>
+          ) : (
+            <>
+              <label className="text-sm font-semibold text-gray-700 block mb-3">Enter your denial code</label>
+              <div className="flex gap-3 mb-3">
+                <input value={denialCode} onChange={e => setDenialCode(e.target.value)}
+                  className="flex-1 bg-gray-50 rounded-xl px-4 py-3 text-sm outline-none text-gray-700 placeholder-gray-300 border border-gray-100 focus:border-blue-300 transition-colors"
+                  placeholder="e.g. CO-4, PR-1, OA-23" />
+                <input value={amount} onChange={e => setAmount(e.target.value)}
+                  className="w-36 bg-gray-50 rounded-xl px-4 py-3 text-sm outline-none text-gray-700 placeholder-gray-300 border border-gray-100 focus:border-blue-300 transition-colors"
+                  placeholder="Amount ($)" type="number" />
+              </div>
+              <p className="text-xs text-gray-400 mb-2">Common codes — click to fill:</p>
+              <div className="flex gap-2 mb-4">
+                {['CO-4', 'CO-97', 'PR-1', 'PR-204', 'OA-23'].map(c => (
+                  <button key={c} onClick={() => setDenialCode(c)}
+                    className="bg-blue-50 text-blue-600 text-xs px-3 py-1.5 rounded-lg font-medium hover:bg-blue-100 transition-colors">{c}</button>
+                ))}
+              </div>
+              <button onClick={explainDenial} disabled={loading || !denialCode}
+                className="bg-blue-500 hover:bg-blue-600 text-white font-semibold px-8 py-3 rounded-xl disabled:opacity-40 transition-all active:scale-95 text-sm shadow-sm shadow-blue-200">
+                {loading ? 'Looking up...' : 'Explain Denial'}
+              </button>
+            </>
+          )}
+        </div>
 
-        {/* EOB Results */}
         {result?.type === 'eob' && (
-          <>
+          <div className="space-y-5">
             {result.data.decoded_terms?.length > 0 ? (
-              <div className="bg-white/80 rounded-3xl p-5 shadow-sm">
-                <p className="text-sm font-semibold text-gray-700 mb-3">Terms Explained ({result.data.terms_found} found)</p>
-                <div className="space-y-3">
+              <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100">
+                <h3 className="font-bold text-gray-800 mb-4">Terms Explained ({result.data.terms_found} found)</h3>
+                <div className="divide-y divide-gray-100">
                   {result.data.decoded_terms.map((t, i) => (
-                    <div key={i} className="pb-3 border-b border-gray-100 last:border-0 last:pb-0">
-                      <p className="text-sm font-semibold text-[#2c6b55]">{t.term}</p>
-                      <p className="text-xs text-gray-500 mt-0.5 leading-relaxed">{t.explanation}</p>
+                    <div key={i} className="py-3">
+                      <p className="text-sm font-semibold text-blue-600">{t.term}</p>
+                      <p className="text-sm text-gray-500 mt-0.5 leading-relaxed">{t.explanation}</p>
                     </div>
                   ))}
                 </div>
               </div>
             ) : (
-              <div className="bg-amber-50 border border-amber-200 rounded-2xl p-4 text-sm text-amber-700">
-                No specific terms detected. Try pasting more of your EOB text including headers.
+              <div className="bg-amber-50 border border-amber-200 rounded-xl p-4 text-sm text-amber-700">
+                No specific terms detected. Try including more of your EOB text (headers, sections).
               </div>
             )}
-            <div className="bg-[#e8f2e8] rounded-2xl p-4">
-              <p className="text-sm font-semibold text-[#1a4a38] mb-2">Action Items</p>
-              <ul className="space-y-1.5">
+            <div className="bg-green-50 border border-green-100 rounded-xl p-5">
+              <p className="font-semibold text-green-800 mb-3">Your Action Items</p>
+              <ul className="space-y-2">
                 {result.data.action_items?.map((a, i) => (
-                  <li key={i} className="text-xs text-[#2c6b55] flex gap-2">
-                    <span className="mt-0.5">•</span><span>{a}</span>
+                  <li key={i} className="text-sm text-green-700 flex gap-2">
+                    <span className="text-green-500 flex-shrink-0">✓</span>{a}
                   </li>
                 ))}
               </ul>
             </div>
-          </>
+          </div>
         )}
 
-        {/* Denial Results */}
         {result?.type === 'denial' && (
-          <>
-            <div className="bg-red-50 border border-red-200 rounded-2xl p-4">
-              <p className="text-xs font-bold text-red-500 mb-1">Code {result.data.code}</p>
-              <p className="text-sm font-semibold text-red-800 mb-1">{result.data.reason}</p>
-              <p className="text-xs text-red-600 leading-relaxed">{result.data.recommended_action}</p>
-              <div className="flex gap-3 mt-2 text-xs text-gray-400">
-                <span>Success: {result.data.success_rate}</span>
+          <div className="space-y-5">
+            <div className="bg-red-50 border border-red-200 rounded-xl p-5">
+              <p className="text-xs font-bold text-red-500 mb-1">DENIAL CODE {result.data.code}</p>
+              <p className="text-base font-bold text-red-800 mb-2">{result.data.reason}</p>
+              <p className="text-sm text-red-700 leading-relaxed">{result.data.recommended_action}</p>
+              <div className="flex gap-4 mt-3 text-xs text-gray-500">
+                <span>Appeal success rate: <strong className="text-green-600">{result.data.success_rate}</strong></span>
+                <span>Deadline: <strong>{result.data.deadline}</strong></span>
               </div>
             </div>
-            <div className="bg-white/80 rounded-3xl p-5 shadow-sm">
-              <p className="text-sm font-semibold text-gray-700 mb-3">Appeal Letter Template</p>
-              <pre className="bg-[#f7faf7] rounded-2xl p-4 text-xs whitespace-pre-wrap font-mono text-gray-600 leading-relaxed">{result.data.appeal_template}</pre>
+            <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100">
+              <h3 className="font-bold text-gray-800 mb-3">Ready-to-Send Appeal Letter</h3>
+              <pre className="bg-gray-50 rounded-xl p-4 text-xs whitespace-pre-wrap font-mono text-gray-600 leading-relaxed border border-gray-100">{result.data.appeal_template}</pre>
             </div>
-          </>
+          </div>
         )}
       </div>
-
-      <BottomNav active="insurance" navigate={navigate} />
     </div>
   )
 }
