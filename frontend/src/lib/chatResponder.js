@@ -1,3 +1,5 @@
+import { search, lookupCode, typeLabel } from './vectorSearch.js'
+
 export function getResponse(message) {
   const msg = message.toLowerCase()
 
@@ -47,7 +49,35 @@ export function getResponse(message) {
     return "Coverage questions depend on your specific plan. Generally:\n• In-network care costs significantly less\n• Preventive care is usually free\n• Always verify coverage BEFORE a procedure by calling member services\n\nThe number is on the back of your insurance card."
   }
 
-  return "I can help with:\n• Medical procedure costs (ask 'how much does X cost?')\n• Understanding your EOB or insurance terms\n• Appealing a denied claim\n• Decoding medical bill charges\n\nWhat do you need help with?"
+  // ── Vector search fallback ─────────────────────────────────────────────
+  // Try exact code lookup first (e.g. "what is 99213" or "explain J45.9")
+  const codeMatch = message.trim().match(/\b([A-Z]\d{2}\.?\d*|[A-Z]\d{2,5}|9\d{4}|8\d{4}|7\d{4}|4\d{4}|3\d{4}|D\d{4})\b/i)
+  if (codeMatch) {
+    const entry = lookupCode(codeMatch[1])
+    if (entry) {
+      const costLine = entry.cost_range ? `\n💰 Typical cost: ${entry.cost_range}` : ''
+      const catLine  = entry.category   ? `\n📂 Category: ${entry.category}`        : ''
+      return `**${typeLabel(entry.type)}: ${entry.code}**\n\n${entry.title}\n\n${entry.description}${costLine}${catLine}\n\nFor more details, try the Code Search tab.`
+    }
+  }
+
+  // Semantic vector search for anything else
+  const vectorResults = search(message, { topK: 3, minScore: 0.07 })
+  if (vectorResults.length > 0) {
+    const top = vectorResults[0]
+    const costLine = top.cost_range ? `\n💰 Typical cost: ${top.cost_range}` : ''
+    let reply = `**${top.title}**\n\n${top.description}${costLine}`
+    if (vectorResults.length > 1) {
+      reply += '\n\n**Related:**'
+      vectorResults.slice(1).forEach(r => {
+        reply += `\n• ${r.title}${r.cost_range ? ' — ' + r.cost_range : ''}`
+      })
+    }
+    reply += '\n\nFor a detailed search, try the **Code Search** tab.'
+    return reply
+  }
+
+  return "I can help with:\n• Medical procedure costs (ask 'how much does X cost?')\n• Understanding your EOB or insurance terms\n• Appealing a denied claim\n• Decoding CPT or ICD-10 codes\n• Searching procedures with the Code Search tab\n\nWhat do you need help with?"
 }
 
 function match(msg, keywords) {

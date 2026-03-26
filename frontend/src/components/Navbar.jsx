@@ -1,3 +1,4 @@
+import { logo, doctor } from '../assets/images.js'
 export default function Navbar({ navigate }) {
   const links = [
     { label: 'Home', id: 'home' },
@@ -5,6 +6,7 @@ export default function Navbar({ navigate }) {
     { label: 'Treatment Estimator', id: 'cost' },
     { label: 'Bill Translator', id: 'bill' },
     { label: 'AI Chat', id: 'chat' },
+    { label: 'Code Search', id: 'search' },
   ]
 
   return (
@@ -12,7 +14,7 @@ export default function Navbar({ navigate }) {
       <div className="max-w-7xl mx-auto flex items-center justify-between h-[72px]">
         {/* Logo */}
         <button onClick={() => navigate('home')} className="flex items-center flex-shrink-0">
-          <img src={`${import.meta.env.BASE_URL}logo.png`} alt="Clarity Care" className="h-14 w-auto object-contain" />
+          <img src={logo} alt="Clarity Care" className="h-14 w-auto object-contain" />
         </button>
 
         {/* Nav links */}
