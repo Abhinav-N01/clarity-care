@@ -79,23 +79,6 @@ export default function LandingPage({ navigate }) {
               </button>
             </div>
 
-            {/* Trust badge */}
-            <div className="mt-10 flex items-center gap-6">
-              <div className="flex -space-x-2">
-                {['bg-blue-400','bg-green-400','bg-purple-400','bg-pink-400'].map((c,i) => (
-                  <div key={i} className={`w-8 h-8 rounded-full ${c} border-2 border-white flex items-center justify-center text-white text-xs font-bold`}>
-                    {['A','B','C','D'][i]}
-                  </div>
-                ))}
-              </div>
-              <div>
-                <p className="text-sm font-semibold text-gray-800">1,200+ patients helped</p>
-                <div className="flex items-center gap-1">
-                  {[1,2,3,4,5].map(s => <span key={s} className="text-yellow-400 text-xs">★</span>)}
-                  <span className="text-xs text-gray-500 ml-1">4.9/5 rating</span>
-                </div>
-              </div>
-            </div>
           </div>
 
           {/* Right — Doctor image */}
@@ -106,27 +89,6 @@ export default function LandingPage({ navigate }) {
               className="relative z-10 w-[340px] lg:w-[420px] object-contain drop-shadow-2xl"
             />
 
-            {/* Floating card */}
-            <div className="absolute bottom-20 left-0 lg:left-[-20px] bg-white rounded-2xl shadow-xl p-4 flex items-center gap-3 z-20 border border-gray-100">
-              <div className="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center text-blue-600 font-bold text-sm flex-shrink-0">
-                DS
-              </div>
-              <div>
-                <p className="font-semibold text-gray-800 text-sm">Dr. Shimanta</p>
-                <button
-                  onClick={() => navigate('chat')}
-                  className="text-xs bg-blue-500 text-white px-3 py-1 rounded-full mt-1 hover:bg-blue-600 transition-colors"
-                >
-                  Testimonials
-                </button>
-              </div>
-            </div>
-
-            {/* Stats card */}
-            <div className="absolute top-8 right-0 bg-white rounded-2xl shadow-xl p-4 z-20 border border-gray-100 text-center">
-              <p className="text-2xl font-extrabold text-blue-500">35%</p>
-              <p className="text-xs text-gray-500 mt-0.5">Less billing<br/>confusion</p>
-            </div>
           </div>
         </div>
       </section>
@@ -158,10 +120,7 @@ export default function LandingPage({ navigate }) {
       {/* Footer */}
       <footer className="bg-white border-t border-gray-100 px-8 py-6">
         <div className="max-w-7xl mx-auto flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <img src="/logo.png" alt="Clarity Care" className="w-8 h-8 rounded-lg object-contain" />
-            <span className="font-bold text-gray-700">Clarity Care</span>
-          </div>
+          <img src="/logo.png" alt="Clarity Care" className="h-10 w-auto object-contain" />
           <p className="text-xs text-gray-400">© 2024 Clarity Care. For informational purposes only.</p>
         </div>
       </footer>

@@ -11,9 +11,8 @@ export default function Navbar({ navigate }) {
     <nav className="sticky top-0 z-50 bg-white/95 backdrop-blur border-b border-gray-100 px-8 lg:px-16">
       <div className="max-w-7xl mx-auto flex items-center justify-between h-[72px]">
         {/* Logo */}
-        <button onClick={() => navigate('home')} className="flex items-center gap-3 flex-shrink-0">
-          <img src="/logo.png" alt="Clarity Care" className="w-10 h-10 rounded-xl object-contain" />
-          <span className="text-blue-500 font-bold text-xl tracking-tight">Clarity Care AI</span>
+        <button onClick={() => navigate('home')} className="flex items-center flex-shrink-0">
+          <img src="/logo.png" alt="Clarity Care" className="h-12 w-auto object-contain" />
         </button>
 
         {/* Nav links */}
