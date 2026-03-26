@@ -48,6 +48,7 @@ export default function ChatScreen({ navigate, user }) {
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
           </svg>
         </button>
+        <img src="/logo.png" alt="Clarity Care" className="w-8 h-8 rounded-full object-cover" />
         <div className="flex-1">
           <h1 className="text-lg font-bold text-gray-800">Clarity Care AI</h1>
           <p className="text-xs text-gray-500">Ask any questions like "What is covered in my insurance if I break a tooth?" or "Am I covered for an MRI?"</p>

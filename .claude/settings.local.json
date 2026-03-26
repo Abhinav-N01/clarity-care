@@ -1,0 +1,8 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(mkdir -p \"/Users/abhinav/Desktop/Clarity Care/backend/routes\" \"/Users/abhinav/Desktop/Clarity Care/backend/data\" \"/Users/abhinav/Desktop/Clarity Care/backend/models\")",
+      "Bash(mkdir -p \"/Users/abhinav/Desktop/Clarity Care/frontend/src/components\")"
+    ]
+  }
+}

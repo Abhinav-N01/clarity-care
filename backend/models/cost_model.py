@@ -13,7 +13,26 @@ class CostPredictor:
         self._train()
 
     def _train(self):
-        df = pd.read_csv("data/dummy_claims.csv")
+        csv_path = "data/dummy_claims.csv"
+        if not __import__("os").path.exists(csv_path):
+            import random, os
+            random.seed(42)
+            procedures = {"99213": 150, "99214": 250, "93000": 75, "85025": 40, "71046": 200, "70553": 1800, "27447": 35000, "90837": 180}
+            rows = []
+            for _ in range(500):
+                cpt = random.choice(list(procedures.keys()))
+                base = procedures[cpt]
+                age = random.randint(18, 85)
+                sf = random.uniform(0.8, 1.4)
+                ins = random.choice(["PPO", "HMO", "HDHP", "Medicare", "Medicaid"])
+                inf = {"PPO": 1.0, "HMO": 0.85, "HDHP": 0.95, "Medicare": 0.75, "Medicaid": 0.6}[ins]
+                fac = random.choice(["Hospital", "Outpatient", "Clinic"])
+                ff = {"Hospital": 1.3, "Outpatient": 1.0, "Clinic": 0.8}[fac]
+                cost = base * sf * inf * ff * random.uniform(0.9, 1.1)
+                rows.append({"cpt_code": cpt, "age": age, "insurance_type": ins, "facility_type": fac, "state_cost_index": round(sf, 2), "total_cost": round(cost, 2), "patient_responsibility": round(cost * random.uniform(0.1, 0.4), 2)})
+            pd.DataFrame(rows).to_csv(csv_path, index=False)
+            print("Auto-generated dummy_claims.csv")
+        df = pd.read_csv(csv_path)
 
         cat_cols = ["cpt_code", "insurance_type", "facility_type"]
         for col in cat_cols:
