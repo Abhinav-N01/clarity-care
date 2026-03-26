@@ -16,20 +16,61 @@ export function decodeEOB(text) {
 
   const eobSummary = parseEOBColumns(text)
 
+  const denialCodes = parseDenialCodes(text)
+
+  const actionItems = [
+    "This EOB is NOT a bill — wait for an actual invoice before paying",
+    "Compare 'Amount Billed' vs 'Allowed Amount' — you are NOT responsible for the difference",
+    "Check if your provider is in-network to ensure correct rates",
+    "Verify your deductible and out-of-pocket maximum on your insurer's website",
+    "If 'Patient Responsibility' seems too high, call the member services number on your card",
+  ]
+  if (denialCodes.length > 0) {
+    actionItems.push("Review all denial codes listed below — some may be billing errors you can appeal")
+    actionItems.push("You have the right to appeal any denial — most insurers require appeals within 180 days")
+  }
+
   return {
     decoded_terms: foundTerms.length ? foundTerms : allTerms,
     terms_found: foundTerms.length,
     showed_all: foundTerms.length === 0,
     extracted_amounts: amounts,
     eob_summary: eobSummary,
-    action_items: [
-      "This EOB is NOT a bill — wait for an actual invoice before paying",
-      "Compare 'Amount Billed' vs 'Allowed Amount' — you are NOT responsible for the difference",
-      "Check if your provider is in-network to ensure correct rates",
-      "Verify your deductible and out-of-pocket maximum on your insurer's website",
-      "If 'Patient Responsibility' seems too high, call the member services number on your card",
-    ],
+    denial_codes: denialCodes,
+    action_items: actionItems,
   }
+}
+
+const DENIAL_CODE_LABELS = {
+  'CO-4':   'Procedure code inconsistent with modifier',
+  'CO-11':  'Diagnosis inconsistent with procedure',
+  'CO-45':  'Contractual adjustment — provider write-off',
+  'CO-50':  'Non-covered service — not medically necessary per plan',
+  'CO-96':  'Not covered by this payer/contractor — submit to other payer',
+  'CO-97':  'Service bundled into another procedure already paid',
+  'CO-197': 'Precertification/authorization absent or exceeded',
+  'PR-1':   'Deductible amount applied',
+  'PR-2':   'Coinsurance amount applied',
+  'PR-3':   'Copay amount applied',
+  'PR-96':  'Non-covered charge — patient responsibility',
+  'PR-204': 'Service not covered under this plan',
+  'OA-23':  'Payment adjusted — the impact of prior payer(s) adjudication',
+}
+
+function parseDenialCodes(text) {
+  const found = []
+  const seen = new Set()
+  const pattern = /\b(CO|PR|OA)-(\d+)\b/gi
+  let match
+  while ((match = pattern.exec(text)) !== null) {
+    const code = match[0].toUpperCase()
+    if (!seen.has(code)) {
+      seen.add(code)
+      found.push({ code, reason: DENIAL_CODE_LABELS[code] || 'Claim adjustment reason code' })
+    }
+  }
+  // filter out CO-45 (contractual adj) since it's not really a "denial"
+  return found.filter(c => c.code !== 'CO-45')
 }
 
 function parseEOBColumns(text) {
