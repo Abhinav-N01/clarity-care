@@ -13,6 +13,25 @@ import { search, lookupCode, typeLabel } from './vectorSearch.js'
  */
 export function getResponse(message) {
   const msg = message.toLowerCase()
+
+  // ═══════════════════════════════════════════════════════════════════════════
+  // 0. SYMPTOM-AWARE INSURANCE NAVIGATOR (SAIN)
+  //    Detects symptom descriptions and recommends care setting + providers
+  // ═══════════════════════════════════════════════════════════════════════════
+  const hasSymptom = match(msg, [
+    'i have ', "i'm having", 'i am having', 'i feel ', "i'm feeling", 'i feel like',
+    'i have been', "i've been", 'experiencing', 'suffering from', 'i am experiencing',
+    'having ', 'my chest', 'my stomach', 'my arm', 'my leg', 'my head', 'my throat',
+    'i think i', 'what should i do', 'what do i do', 'should i go', 'do i need to go',
+  ])
+
+  if (hasSymptom || match(msg, ['chest pain', 'can\'t breathe', 'cannot breathe', 'hard to breathe',
+    'shortness of breath', 'stroke', 'unconscious', 'seizure', 'allergic reaction',
+    'severe bleeding', 'not breathing', 'passing out', 'passed out', 'anaphylaxis'])) {
+    const sain = detectSymptom(msg)
+    if (sain) return sain
+  }
+
   const hasCoverage = match(msg, ['covered', 'coverage', 'does insurance', 'will insurance', 'is it covered', 'am i covered', 'cover my', 'cover the', 'cover a', 'cover an', 'does my insurance', 'what does insurance'])
 
   // ═══════════════════════════════════════════════════════════════════════════
@@ -548,10 +567,156 @@ export function getResponse(message) {
   )
 }
 
-function reply(content, suggestions = []) {
-  return { content, suggestions }
+function reply(content, suggestions = [], symptomCard = null) {
+  return { content, suggestions, symptomCard }
 }
 
 function match(msg, keywords) {
   return keywords.some(k => msg.includes(k))
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
+// SAIN — Symptom-Aware Insurance Navigator
+// ═══════════════════════════════════════════════════════════════════════════
+
+const ER_PROVIDERS = [
+  { name: 'Central Medical Center', address: '1200 Hospital Blvd', distance: '0.8 mi', wait: '~25 min', phone: '(555) 234-5678', inNetwork: true },
+  { name: 'River City Hospital', address: '450 Healthcare Ave', distance: '1.4 mi', wait: '~40 min', phone: '(555) 345-6789', inNetwork: true },
+  { name: 'Metro General Hospital', address: '800 Medical Dr', distance: '2.1 mi', wait: '~15 min', phone: '(555) 456-7890', inNetwork: false },
+]
+
+const URGENT_PROVIDERS = [
+  { name: 'AFC Urgent Care', address: '234 Main St', distance: '0.3 mi', wait: '~10 min', phone: '(555) 567-8901', inNetwork: true },
+  { name: 'CityMD Urgent Care', address: '567 Oak Ave', distance: '0.7 mi', wait: '~20 min', phone: '(555) 678-9012', inNetwork: true },
+  { name: 'FastMed Urgent Care', address: '890 Pine Rd', distance: '1.2 mi', wait: '~5 min', phone: '(555) 789-0123', inNetwork: true },
+]
+
+const VIRTUAL_PROVIDERS = [
+  { name: 'Teladoc', address: 'Video or phone', distance: null, wait: 'Available now', phone: null, inNetwork: true },
+  { name: 'MDLive', address: 'Video or phone', distance: null, wait: '~5 min wait', phone: null, inNetwork: true },
+  { name: 'Clarity Telehealth', address: 'Video or phone', distance: null, wait: 'Next in 15 min', phone: null, inNetwork: true },
+]
+
+function detectSymptom(msg) {
+  // EMERGENCY — 911 immediately
+  if (match(msg, [
+    'can\'t breathe', 'cannot breathe', 'not breathing', 'stopped breathing',
+    'crushing chest', 'chest pain radiating', 'left arm pain', 'jaw pain',
+    'face drooping', 'face is drooping', 'arm weakness', 'sudden numbness',
+    'sudden severe headache', 'worst headache', 'stroke',
+    'unconscious', 'passed out', 'won\'t wake', 'unresponsive',
+    'anaphylaxis', 'throat closing', 'throat is closing', 'can\'t swallow',
+    'severe allergic', 'epipen', 'severe bleeding', 'bleeding won\'t stop',
+    'not breathing', 'seizure', 'convuls',
+  ])) {
+    return {
+      content: '🚨 **This sounds like a medical emergency.**\n\nCall 911 immediately or have someone drive you to the nearest ER. Do not drive yourself.\n\n**While waiting for help:**\n• Stay calm and stay still\n• Loosen any tight clothing\n• Do not eat or drink anything\n• Unlock your front door if possible\n\nEmergency services are always covered by insurance — even out-of-network.',
+      suggestions: ['What does ER insurance cover?', 'What is the No Surprises Act?', 'What should I tell the 911 operator?'],
+      symptomCard: {
+        urgency: 'emergency',
+        urgencyLabel: '🚨 Call 911 Now',
+        condition: 'Possible life-threatening emergency',
+        providers: ER_PROVIDERS.slice(0, 2),
+        preAuthRequired: false,
+        preAuthNote: 'Emergency care is always covered — no prior auth needed',
+        estimatedCost: '$100–$350 copay (ER)',
+        isEmergency: true,
+      },
+    }
+  }
+
+  // ER — go now, not 911 level
+  if (match(msg, [
+    'chest pain', 'chest hurts', 'chest is hurting', 'chest feels tight', 'chest tightness',
+    'difficulty breathing', 'shortness of breath', 'hard to breathe', 'breathing difficulty',
+    'severe abdominal', 'severe stomach', 'stomach is killing', 'unbearable pain',
+    'head injury', 'head trauma', 'hit my head', 'concussion',
+    'broken bone', 'bone is broken', 'fracture', 'bone sticking',
+    'deep cut', 'won\'t stop bleeding', 'stitches', 'needs stitches',
+    'high fever', 'fever of 10', '103', '104', '105',
+    'reaction to medication', 'overdose', 'poisoning', 'swallowed',
+    'eye injury', 'can\'t see', 'sudden vision',
+  ])) {
+    return {
+      content: '🏥 **Based on your symptoms, you should go to the Emergency Room.**\n\nThis needs immediate evaluation — don\'t wait for an appointment.\n\n**At the ER:**\n• Tell them your symptoms clearly and when they started\n• Bring your insurance card and a photo ID\n• Emergency care is covered even out-of-network (No Surprises Act)\n• You may have an ER copay ($100–$350) but won\'t be denied care\n\nIf symptoms worsen rapidly — call 911.',
+      suggestions: ['What will the ER cost with insurance?', 'Is the ER always covered?', 'What is the No Surprises Act?', 'What should I tell the ER doctor?'],
+      symptomCard: {
+        urgency: 'er',
+        urgencyLabel: '🏥 Go to ER Now',
+        condition: 'Requires emergency evaluation',
+        providers: ER_PROVIDERS.slice(0, 2),
+        preAuthRequired: false,
+        preAuthNote: 'Emergency care — no prior auth required',
+        estimatedCost: '$150–$500 with insurance',
+        isEmergency: false,
+      },
+    }
+  }
+
+  // URGENT CARE
+  if (match(msg, [
+    'fever', 'temperature', 'burning when i pee', 'uti', 'urinary',
+    'ear pain', 'ear ache', 'ear hurts', 'ear infection',
+    'sore throat', 'strep', 'throat hurts', 'tonsil',
+    'sprain', 'twisted', 'rolled my ankle', 'ankle hurts',
+    'cut', 'laceration', 'gash', 'wound',
+    'rash', 'skin infection', 'red and swollen',
+    'pink eye', 'eye is red', 'conjunctivitis',
+    'sinus', 'sinusitis', 'sinus infection', 'sinus pressure',
+    'vomiting', 'throwing up', 'nausea', 'can\'t keep food down',
+    'diarrhea', 'stomach bug', 'stomach flu',
+    'cough', 'bronchitis', 'mild breathing',
+    'minor injury', 'i fell', 'i slipped',
+    'insect bite', 'bee sting', 'tick bite',
+    'back pain', 'pulled muscle', 'muscle strain',
+    'migraine', 'bad headache', 'headache won\'t go away',
+    'flu', 'influenza', 'body aches', 'feeling sick',
+  ])) {
+    return {
+      content: '🏃 **Based on your symptoms, Urgent Care is the right choice.**\n\nThis doesn\'t require the ER — urgent care is faster, cheaper, and handles this well.\n\n**Tips:**\n• Urgent care copay: $50–$100 (vs $100–$350 ER copay)\n• No appointment needed at most locations\n• Call ahead to check wait times\n• Bring your insurance card\n\n⚠️ If symptoms worsen significantly — go to the ER instead.',
+      suggestions: ['How much does urgent care cost?', 'What does urgent care treat?', 'When should I go to the ER instead?', 'Is urgent care covered by insurance?'],
+      symptomCard: {
+        urgency: 'urgent_care',
+        urgencyLabel: '🏃 Urgent Care Recommended',
+        condition: 'Non-emergency — urgent evaluation needed',
+        providers: URGENT_PROVIDERS.slice(0, 2),
+        preAuthRequired: false,
+        preAuthNote: 'No prior authorization needed for urgent care',
+        estimatedCost: '$50–$100 copay',
+        isEmergency: false,
+      },
+    }
+  }
+
+  // VIRTUAL VISIT
+  if (match(msg, [
+    'runny nose', 'stuffy nose', 'congestion', 'nasal', 'sneezing',
+    'mild sore throat', 'scratchy throat',
+    'cold symptoms', 'common cold', 'i have a cold',
+    'allergy', 'allergies', 'seasonal',
+    'mild rash', 'slight rash', 'dry skin',
+    'refill', 'prescription refill', 'medication refill', 'need a refill',
+    'follow up', 'follow-up', 'checking in',
+    'feeling tired', 'fatigue', 'just tired',
+    'mild headache', 'slight headache',
+    'anxiety', 'stressed', 'feeling anxious',
+    'sleep', 'can\'t sleep', 'insomnia',
+  ])) {
+    return {
+      content: '💻 **A virtual visit is the best option for your symptoms.**\n\nYou can see a doctor from home in minutes — no waiting room, no travel.\n\n**What virtual visits handle:**\n• Cold/flu symptoms, allergies, congestion\n• Prescription refills and medication questions\n• Mild rashes, skin concerns\n• Mental health check-ins\n• Follow-up appointments\n\n**Cost:** Often $0–$30 with insurance. Many employers offer free telehealth through their benefits.',
+      suggestions: ['How much does a telehealth visit cost?', 'Can I get a prescription through telehealth?', 'What is covered in a virtual visit?', 'What is Teladoc?'],
+      symptomCard: {
+        urgency: 'virtual',
+        urgencyLabel: '💻 Virtual Visit',
+        condition: 'Suitable for telehealth',
+        providers: VIRTUAL_PROVIDERS,
+        preAuthRequired: false,
+        preAuthNote: 'No prior authorization needed',
+        estimatedCost: '$0–$30 with insurance',
+        isEmergency: false,
+      },
+    }
+  }
+
+  return null // No symptom pattern matched — fall through to other handlers
 }
