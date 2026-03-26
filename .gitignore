@@ -1,0 +1,17 @@
+# Python
+__pycache__/
+*.pyc
+*.pyo
+venv/
+.env
+*.egg-info/
+
+# Node
+node_modules/
+dist/
+
+# Data (generated)
+backend/data/dummy_claims.csv
+
+# OS
+.DS_Store

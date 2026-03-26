@@ -1,0 +1,12 @@
+{
+  "J06.9": {"description": "Acute upper respiratory infection, unspecified", "plain_english": "Common cold or upper respiratory infection"},
+  "I10": {"description": "Essential hypertension", "plain_english": "High blood pressure"},
+  "E11.9": {"description": "Type 2 diabetes mellitus without complications", "plain_english": "Type 2 diabetes"},
+  "M54.5": {"description": "Low back pain", "plain_english": "Lower back pain"},
+  "F32.9": {"description": "Major depressive disorder, single episode", "plain_english": "Depression"},
+  "Z00.00": {"description": "Encounter for general adult medical examination", "plain_english": "Annual physical exam"},
+  "K21.0": {"description": "GERD with esophagitis", "plain_english": "Acid reflux disease"},
+  "J45.901": {"description": "Unspecified asthma, uncomplicated", "plain_english": "Asthma"},
+  "N39.0": {"description": "Urinary tract infection", "plain_english": "UTI"},
+  "S82.002A": {"description": "Fracture of patella", "plain_english": "Broken kneecap"}
+}
