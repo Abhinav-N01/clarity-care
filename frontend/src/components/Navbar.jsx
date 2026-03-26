@@ -28,21 +28,6 @@ export default function Navbar({ navigate }) {
           ))}
         </div>
 
-        {/* CTA */}
-        <div className="flex items-center gap-3">
-          <button
-            onClick={() => navigate('chat')}
-            className="hidden sm:block text-gray-600 hover:text-blue-500 font-medium text-sm transition-colors"
-          >
-            Sign In
-          </button>
-          <button
-            onClick={() => navigate('chat')}
-            className="bg-blue-500 hover:bg-blue-600 text-white font-semibold px-5 py-2.5 rounded-xl text-sm transition-all shadow-sm shadow-blue-200 active:scale-95"
-          >
-            Sign Up
-          </button>
-        </div>
       </div>
     </nav>
   )
