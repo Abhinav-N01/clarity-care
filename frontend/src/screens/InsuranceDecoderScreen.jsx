@@ -4,6 +4,35 @@ import Navbar from '../components/Navbar'
 
 const API = 'http://localhost:8000/api'
 
+const SAMPLE_EOB = `EXPLANATION OF BENEFITS
+Member: John Doe | Claim #: 2024-98765
+Date of Service: 03/15/2024
+
+Provider: City Medical Center
+Service: Office Visit (99214)
+
+Amount Billed: $350.00
+Allowed Amount: $210.00
+Plan Paid: $168.00
+Deductible Applied: $0.00
+Copay: $25.00
+Coinsurance: $17.00
+Patient Responsibility: $42.00
+
+Your out-of-pocket maximum: $3,000.00
+Amount applied this year: $842.00
+
+This is not a bill. Wait for a statement from your provider.`
+
+const SUMMARY_LABELS = {
+  billed_amount: { label: 'Amount Billed', color: 'text-gray-700', note: 'What the provider charged' },
+  allowed_amount: { label: 'Allowed Amount', color: 'text-blue-600', note: "Max your insurer will pay — you're not responsible for the rest" },
+  plan_paid: { label: 'Insurance Paid', color: 'text-green-600', note: 'What your insurance actually covered' },
+  deductible_applied: { label: 'Deductible Applied', color: 'text-orange-500', note: 'Counted toward your annual deductible' },
+  copay: { label: 'Copay', color: 'text-purple-600', note: 'Your fixed fee for this visit' },
+  patient_owes: { label: 'You Owe', color: 'text-red-600', note: 'Your total responsibility — this is what to pay' },
+}
+
 export default function InsuranceDecoderScreen({ navigate }) {
   const [mode, setMode] = useState('eob')
   const [eobText, setEobText] = useState('')
@@ -57,10 +86,16 @@ export default function InsuranceDecoderScreen({ navigate }) {
         <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100 mb-6">
           {mode === 'eob' ? (
             <>
-              <label className="text-sm font-semibold text-gray-700 block mb-3">Paste your Explanation of Benefits</label>
+              <div className="flex justify-between items-center mb-3">
+                <label className="text-sm font-semibold text-gray-700">Paste your Explanation of Benefits</label>
+                <button onClick={() => setEobText(SAMPLE_EOB)}
+                  className="text-xs text-blue-500 font-medium bg-blue-50 px-3 py-1.5 rounded-lg hover:bg-blue-100 transition-colors">
+                  Load sample EOB
+                </button>
+              </div>
               <textarea value={eobText} onChange={e => setEobText(e.target.value)}
-                className="w-full bg-gray-50 rounded-xl p-4 text-sm h-40 resize-none outline-none text-gray-600 placeholder-gray-300 border border-gray-100 focus:border-blue-300 transition-colors"
-                placeholder="Paste your EOB text here..." />
+                className="w-full bg-gray-50 rounded-xl p-4 text-sm h-44 resize-none outline-none text-gray-600 placeholder-gray-300 border border-gray-100 focus:border-blue-300 transition-colors font-mono"
+                placeholder="Paste your EOB text here — or click 'Load sample EOB' to try it out..." />
               <button onClick={decodeEOB} disabled={loading || !eobText}
                 className="mt-4 bg-blue-500 hover:bg-blue-600 text-white font-semibold px-8 py-3 rounded-xl disabled:opacity-40 transition-all active:scale-95 text-sm shadow-sm shadow-blue-200">
                 {loading ? 'Decoding...' : 'Decode EOB'}
@@ -92,25 +127,51 @@ export default function InsuranceDecoderScreen({ navigate }) {
           )}
         </div>
 
+        {/* EOB Results */}
         {result?.type === 'eob' && (
           <div className="space-y-5">
-            {result.data.decoded_terms?.length > 0 ? (
+
+            {/* Cost breakdown — show if we parsed any figures */}
+            {result.data.eob_summary && Object.keys(result.data.eob_summary).length > 0 && (
               <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100">
-                <h3 className="font-bold text-gray-800 mb-4">Terms Explained ({result.data.terms_found} found)</h3>
-                <div className="divide-y divide-gray-100">
-                  {result.data.decoded_terms.map((t, i) => (
-                    <div key={i} className="py-3">
-                      <p className="text-sm font-semibold text-blue-600">{t.term}</p>
-                      <p className="text-sm text-gray-500 mt-0.5 leading-relaxed">{t.explanation}</p>
-                    </div>
-                  ))}
+                <h3 className="font-bold text-gray-800 mb-4">Your Cost Breakdown</h3>
+                <div className="space-y-3">
+                  {Object.entries(result.data.eob_summary).map(([key, value]) => {
+                    const meta = SUMMARY_LABELS[key]
+                    if (!meta) return null
+                    return (
+                      <div key={key} className="flex items-start justify-between gap-4 pb-3 border-b border-gray-50 last:border-0 last:pb-0">
+                        <div>
+                          <p className={`text-sm font-semibold ${meta.color}`}>{meta.label}</p>
+                          <p className="text-xs text-gray-400 mt-0.5">{meta.note}</p>
+                        </div>
+                        <p className={`font-bold text-base flex-shrink-0 ${meta.color}`}>${value.toLocaleString('en-US', {minimumFractionDigits: 2})}</p>
+                      </div>
+                    )
+                  })}
                 </div>
               </div>
-            ) : (
-              <div className="bg-amber-50 border border-amber-200 rounded-xl p-4 text-sm text-amber-700">
-                No specific terms detected. Try including more of your EOB text (headers, sections).
-              </div>
             )}
+
+            {/* Terms glossary */}
+            <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100">
+              <h3 className="font-bold text-gray-800 mb-1">
+                {result.data.showed_all ? 'EOB Terms Glossary' : `Terms Found in Your EOB (${result.data.terms_found})`}
+              </h3>
+              {result.data.showed_all && (
+                <p className="text-xs text-gray-400 mb-4">No specific terms detected in your text — here's a full glossary of all EOB terms.</p>
+              )}
+              <div className="divide-y divide-gray-100 mt-3">
+                {result.data.decoded_terms.map((t, i) => (
+                  <div key={i} className="py-3">
+                    <p className="text-sm font-semibold text-blue-600">{t.term}</p>
+                    <p className="text-sm text-gray-500 mt-0.5 leading-relaxed">{t.explanation}</p>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Action items */}
             <div className="bg-green-50 border border-green-100 rounded-xl p-5">
               <p className="font-semibold text-green-800 mb-3">Your Action Items</p>
               <ul className="space-y-2">
@@ -124,6 +185,7 @@ export default function InsuranceDecoderScreen({ navigate }) {
           </div>
         )}
 
+        {/* Denial Results */}
         {result?.type === 'denial' && (
           <div className="space-y-5">
             <div className="bg-red-50 border border-red-200 rounded-xl p-5">
@@ -131,7 +193,7 @@ export default function InsuranceDecoderScreen({ navigate }) {
               <p className="text-base font-bold text-red-800 mb-2">{result.data.reason}</p>
               <p className="text-sm text-red-700 leading-relaxed">{result.data.recommended_action}</p>
               <div className="flex gap-4 mt-3 text-xs text-gray-500">
-                <span>Appeal success rate: <strong className="text-green-600">{result.data.success_rate}</strong></span>
+                <span>Success rate: <strong className="text-green-600">{result.data.success_rate}</strong></span>
                 <span>Deadline: <strong>{result.data.deadline}</strong></span>
               </div>
             </div>

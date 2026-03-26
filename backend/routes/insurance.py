@@ -43,31 +43,61 @@ class ClaimInput(BaseModel):
 
 @router.post("/decode-eob")
 async def decode_eob(input: EOBInput):
+    import re
     text_lower = input.text.lower()
-    found_terms = []
 
+    # Match terms that appear in the text
+    found_terms = []
     for term, explanation in EOB_TERMS.items():
         if term in text_lower:
-            found_terms.append({
-                "term": term.title(),
-                "explanation": explanation
-            })
+            found_terms.append({"term": term.title(), "explanation": explanation})
 
-    import re
+    # Always include all key EOB terms as a reference guide
+    all_terms = [{"term": k.title(), "explanation": v} for k, v in EOB_TERMS.items()]
+
+    # Extract dollar amounts
     amounts = re.findall(r'\$?([\d,]+\.?\d{2})', input.text)
+    extracted = [float(a.replace(",", "")) for a in amounts[:8]]
+
+    # Parse common EOB columns from text
+    eob_summary = parse_eob_columns(input.text)
 
     return {
-        "decoded_terms": found_terms,
+        "decoded_terms": found_terms if found_terms else all_terms,
         "terms_found": len(found_terms),
-        "extracted_amounts": [float(a.replace(",", "")) for a in amounts[:8]],
+        "showed_all": len(found_terms) == 0,
+        "extracted_amounts": extracted,
+        "eob_summary": eob_summary,
         "action_items": [
-            "Compare 'Amount Billed' vs 'Allowed Amount' — the difference is not your responsibility",
-            "Check if provider is in-network to ensure correct rates",
-            "Verify your deductible and out-of-pocket status online",
-            "Keep this EOB until you receive an actual bill from your provider"
+            "This EOB is NOT a bill — wait for an actual invoice before paying",
+            "Compare 'Amount Billed' vs 'Allowed Amount' — you are NOT responsible for the difference",
+            "Check if your provider is in-network to ensure you're getting the correct rates",
+            "Verify your deductible and out-of-pocket maximum status on your insurer's website",
+            "If 'Patient Responsibility' seems too high, call the member services number on your card"
         ],
         "plan_type": input.plan_type
     }
+
+def parse_eob_columns(text: str) -> dict:
+    """Extract key figures from EOB text using regex patterns."""
+    import re
+    result = {}
+
+    patterns = {
+        "billed_amount":      r'(?:amount billed|billed amount|charges?)[:\s]+\$?([\d,]+\.?\d{0,2})',
+        "allowed_amount":     r'(?:allowed amount|plan allowed|eligible amount)[:\s]+\$?([\d,]+\.?\d{0,2})',
+        "plan_paid":          r'(?:plan paid|insurance paid|amount paid|we paid)[:\s]+\$?([\d,]+\.?\d{0,2})',
+        "patient_owes":       r'(?:patient responsibility|you owe|your share|member responsibility)[:\s]+\$?([\d,]+\.?\d{0,2})',
+        "deductible_applied": r'(?:deductible applied|applied to deductible)[:\s]+\$?([\d,]+\.?\d{0,2})',
+        "copay":              r'(?:copay|co-pay)[:\s]+\$?([\d,]+\.?\d{0,2})',
+    }
+
+    for key, pattern in patterns.items():
+        match = re.search(pattern, text, re.IGNORECASE)
+        if match:
+            result[key] = float(match.group(1).replace(",", ""))
+
+    return result
 
 @router.post("/explain-denial")
 async def explain_denial(input: ClaimInput):

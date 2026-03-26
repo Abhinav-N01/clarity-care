@@ -53,7 +53,7 @@ export default function LandingPage({ navigate }) {
 
             {/* Logo — big and centered in its own block */}
             <div className="mb-8">
-              <img src="/logo.png" alt="Clarity Care" className="h-28 w-auto object-contain" />
+              <img src="/logo.png" alt="Clarity Care" className="h-44 w-auto object-contain" />
             </div>
 
             <h1 className="text-5xl lg:text-6xl font-extrabold text-gray-900 leading-tight mb-6">
