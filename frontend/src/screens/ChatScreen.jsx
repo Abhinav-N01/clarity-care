@@ -13,20 +13,27 @@ const INITIAL_SUGGESTIONS = [
 ]
 
 // Render response content with basic markdown (bold, bullet points)
+function renderInline(text) {
+  const parts = text.split(/\*\*(.*?)\*\*/g)
+  return parts.map((part, j) => j % 2 === 1 ? <strong key={j}>{part}</strong> : part)
+}
+
 function MessageContent({ content }) {
   const lines = content.split('\n')
   return (
     <div className="space-y-0.5">
       {lines.map((line, i) => {
-        if (!line) return <div key={i} className="h-2" />
-        // Bold: **text**
-        const parts = line.split(/\*\*(.*?)\*\*/g)
-        const rendered = parts.map((part, j) => j % 2 === 1 ? <strong key={j}>{part}</strong> : part)
-        // Bullet lines
+        if (!line.trim()) return <div key={i} className="h-1.5" />
         if (line.startsWith('• ') || line.startsWith('- ')) {
-          return <div key={i} className="flex gap-1.5"><span className="mt-1 shrink-0">•</span><span>{rendered.slice(line.startsWith('• ') ? 1 : 1)}</span></div>
+          const text = line.replace(/^[•\-]\s+/, '')
+          return (
+            <div key={i} className="flex gap-1.5 items-start">
+              <span className="shrink-0 mt-0.5">•</span>
+              <span>{renderInline(text)}</span>
+            </div>
+          )
         }
-        return <div key={i}>{rendered}</div>
+        return <div key={i}>{renderInline(line)}</div>
       })}
     </div>
   )
