@@ -50,6 +50,12 @@ export default function LandingPage({ navigate }) {
         <div className="relative max-w-7xl mx-auto px-8 lg:px-16 py-12 lg:py-20 flex flex-col lg:flex-row items-center min-h-[calc(100vh-72px)]">
           {/* Left content */}
           <div className="flex-1 z-10 lg:pr-16">
+
+            {/* Logo — big and centered in its own block */}
+            <div className="mb-8">
+              <img src="/logo.png" alt="Clarity Care" className="h-28 w-auto object-contain" />
+            </div>
+
             <h1 className="text-5xl lg:text-6xl font-extrabold text-gray-900 leading-tight mb-6">
               Bringing Clarity To Care<br />
               <span className="text-gray-900">When It Matters Most</span>
@@ -64,20 +70,17 @@ export default function LandingPage({ navigate }) {
               ))}
             </ul>
 
-            <div className="flex flex-wrap gap-4 items-center">
-              <button
-                onClick={() => navigate('chat')}
-                className="bg-blue-500 hover:bg-blue-600 text-white font-semibold px-8 py-4 rounded-xl text-base shadow-lg shadow-blue-200 transition-all active:scale-95"
-              >
-                Try Free Demo
-              </button>
-              <button
-                onClick={() => navigate('insurance')}
-                className="text-blue-500 font-semibold px-6 py-4 rounded-xl border border-blue-200 hover:bg-blue-50 transition-all text-base"
-              >
-                Learn More →
-              </button>
-            </div>
+            {/* Clarity AI chat box */}
+            <button
+              onClick={() => navigate('chat')}
+              className="group flex items-center gap-4 bg-white border border-gray-200 hover:border-blue-400 rounded-2xl px-6 py-4 shadow-sm hover:shadow-md transition-all active:scale-95 w-fit"
+            >
+              <img src="/logo.png" alt="" className="h-10 w-auto object-contain flex-shrink-0" />
+              <div className="text-left">
+                <p className="font-bold text-gray-900 text-base group-hover:text-blue-600 transition-colors">Clarity AI</p>
+                <p className="text-xs text-gray-400 mt-0.5">Ask me anything about your healthcare costs →</p>
+              </div>
+            </button>
 
           </div>
 
@@ -85,10 +88,9 @@ export default function LandingPage({ navigate }) {
           <div className="relative flex-shrink-0 w-full lg:w-[480px] flex justify-center items-end mt-12 lg:mt-0 z-10">
             <img
               src="/doctor.png"
-              alt="Dr. Shimanta"
+              alt="Doctor"
               className="relative z-10 w-[340px] lg:w-[420px] object-contain drop-shadow-2xl"
             />
-
           </div>
         </div>
       </section>

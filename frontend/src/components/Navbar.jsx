@@ -12,7 +12,7 @@ export default function Navbar({ navigate }) {
       <div className="max-w-7xl mx-auto flex items-center justify-between h-[72px]">
         {/* Logo */}
         <button onClick={() => navigate('home')} className="flex items-center flex-shrink-0">
-          <img src="/logo.png" alt="Clarity Care" className="h-12 w-auto object-contain" />
+          <img src="/logo.png" alt="Clarity Care" className="h-14 w-auto object-contain" />
         </button>
 
         {/* Nav links */}
