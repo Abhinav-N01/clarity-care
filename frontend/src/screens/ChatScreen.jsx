@@ -85,20 +85,43 @@ export default function ChatScreen({ navigate, user }) {
         {/* Sidebar */}
         <div className="hidden lg:flex flex-col w-64 flex-shrink-0 gap-4">
           <div className="bg-white rounded-2xl p-5 shadow-sm border border-gray-100">
-            <img src={doctor} alt="Doctor" className="w-full rounded-xl object-cover mb-4 max-h-48 object-top" />
+            <img src={doctor} alt="Doctor" className="w-full rounded-xl object-cover mb-4 max-h-44 object-top" />
             <h3 className="font-bold text-gray-800 text-sm">Clarity Care AI</h3>
             <p className="text-xs text-gray-500 mt-1 leading-relaxed">
               Ask about any procedure, drug, insurance term, CPT/ICD code, or billing question.
             </p>
-            <div className="mt-3 flex items-center gap-2">
+            <div className="mt-2 flex items-center gap-2">
               <div className="w-2 h-2 rounded-full bg-green-400 animate-pulse" />
               <span className="text-xs text-green-600 font-medium">Ready to help</span>
             </div>
           </div>
 
-          <div className="bg-[#2c6b55] rounded-2xl p-5 text-white shadow-sm">
-            <p className="font-bold text-sm mb-1">💡 Pro tip</p>
-            <p className="text-xs opacity-80 leading-relaxed">Type any CPT or ICD-10 code (e.g. 99213 or I10) to get an instant plain-English explanation.</p>
+          {/* Example questions */}
+          <div className="bg-white rounded-2xl p-4 shadow-sm border border-gray-100">
+            <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-3">Try asking</p>
+            <div className="space-y-2">
+              {[
+                'What is covered in my insurance if I break a tooth?',
+                'Am I covered for an MRI?',
+                'How do I save on prescriptions?',
+                'What is the difference between MRI and CT scan?',
+                'How do I appeal a denied claim?',
+                'What is an out-of-pocket maximum?',
+              ].map(q => (
+                <button
+                  key={q}
+                  onClick={() => send(q)}
+                  className="w-full text-left text-xs text-[#2c6b55] bg-[#2c6b55]/5 hover:bg-[#2c6b55]/10 border border-[#2c6b55]/15 rounded-xl px-3 py-2 transition-colors leading-snug"
+                >
+                  {q}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          <div className="bg-[#2c6b55] rounded-2xl p-4 text-white shadow-sm">
+            <p className="font-bold text-xs mb-1">💡 Pro tip</p>
+            <p className="text-xs opacity-80 leading-relaxed">Type any CPT or ICD-10 code (e.g. 99213 or I10) to get an instant explanation.</p>
           </div>
         </div>
 
